@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Basic Website</title>
+    <title>Codeforces Contest Countdown Timer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,36 +43,77 @@
             width: 100%;
             bottom: 0;
         }
+        
+        .timer {
+            background-color: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Welcome to My Website</h1>
+        <h3>This website shows you the amount of time you have until you meet your inevitable end on the next codeforces contests.
+              Good luck and wish you high rating!</h3>
     </header>
 
-    <nav>
+ <!-- <nav>
         <a href="#home">Home</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
-    </nav>
+    </nav>  -->
+    <div id = "timers"></div>
+    <script>
+        // Array of target dates
+        const targetDates = [
+            { id: 1, date: new Date(Date.UTC(2024, 7, 10, 14 + 4, 35, 0)) }, 
+            { id: 2, date: new Date(Date.UTC(2024, 7, 11, 14 + 4, 35, 0)) }, 
+            { id: 3, date: new Date(Date.UTC(2024, 7, 12, 14 + 4, 35, 0)) }  
+        ];
 
-    <div class="container" id="home">
-        <h2>Home</h2>
-        <p>This is the home section of the website.</p>
-    </div>
 
-    <div class="container" id="about">
-        <h2>About</h2>
-        <p>This is the about section of the website. Here you can add some information about yourself or your business.</p>
-    </div>
+        function updateTimers() {
+            const now = new Date();
+            targetDates.forEach(target => {
+                const distance = target.date - now.getTime();
+                const timerElement = document.getElementById(`timer-${target.id}`);
 
-    <div class="container" id="contact">
-        <h2>Contact</h2>
-        <p>This is the contact section of the website. You can add your contact details here.</p>
-    </div>
+                if (distance < 0) {
+                    timerElement.innerHTML = `Timer ${target.id}: The date has passed!`;
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                if (target.id == 1) {
+                    timerElement.innerHTML = `Codeforces Round 965(Div 2):<div class="line-separator"><span> ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                } else if (target.id == 2) {
+                    timerElement.innerHTML = `EPIC Institute of Technology Round August 2024 (Div. 1 + Div. 2):<div class="line-separator"><span> ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    timerElement.innerHTML = `Codeforces Round 966(Div 3):<div class="line-separator"><span> ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                }
+            });
+        }
+
+        const timersContainer = document.getElementById('timers');
+        targetDates.forEach(target => {
+            const timerDiv = document.createElement('div');
+            timerDiv.className = 'timer';
+            timerDiv.id = `timer-${target.id}`;
+            timersContainer.appendChild(timerDiv);
+        });
+
+        setInterval(updateTimers, 1000);
+        updateTimers();
+    </script>
 
     <footer>
-        <p>&copy; 2024 My Website. All rights reserved.</p>
+        <p> Cheezits are cool :D. </p>
     </footer>
 </body>
 </html>
