@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codeforces Contest Countdown Timer</title>
+    <title>Random Website</title>
     <style>
         body {
             background-color: #d2d2d2;
@@ -17,7 +17,7 @@
             text-align: center;
             padding: 1em 0;
         }
-        nav {   
+        nav {
             display: flex;
             justify-content: center;
             background-color: #333;
@@ -44,66 +44,57 @@
         }
     </style>
 </head>
+
 <body>
     <header>
-        <h3>This website shows you the amount of time you have until you meet your inevitable end on the next codeforces contests.
-              Good luck and wish you high rating!</h3>
-    </header>
-
- <!-- <nav>
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-    </nav>  -->
-    <div id = "container">
-        <p3>Note that all times are in UTC-4 Easten time.  </p3>
+        <h1>Random Codeforces stuff :O</h1>
+    </header>  
+    <div id="userInput">
+        <label for="handle">Enter Handle:</label>
+        <input type="text" id="handle" placeholder="e.g., tourist">
+        <button id="fetchButton">Get User Info</button>
     </div>
-    <div id = "timers"></div>
+    <div id="userInfo"></div>
+
     <script>
-        // Array of target dates
-        const targetDates = [
-            { id: 1, date: new Date(Date.UTC(2024, 7, 10, 14 + 4, 35, 0)) }, 
-            { id: 2, date: new Date(Date.UTC(2024, 7, 11, 14 + 4, 35, 0)) }, 
-            { id: 3, date: new Date(Date.UTC(2024, 7, 12, 14 + 4, 35, 0)) }  
-        ];
+        // script.js
 
+document.getElementById("fetchButton").addEventListener("click", () => {
+    const handle = document.getElementById("handle").value.trim();
+    const userInfoDiv = document.getElementById("userInfo");
 
-        function updateTimers() {
-            const now = new Date();
-            targetDates.forEach(target => {
-                const distance = target.date - now.getTime();
-                const timerElement = document.getElementById(`timer-${target.id}`);
+    // Clear previous results
+    userInfoDiv.innerHTML = "";
 
-                if (distance < 0) {
-                    timerElement.innerHTML = `Timer ${target.id}: The date has passed!`;
-                    return;
-                }
+    if (!handle) {
+        userInfoDiv.innerHTML = "<p>Please enter a handle.</p>";
+        return;
+    }
 
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    const url = `https://codeforces.com/api/user.info?handles=${handle}`;
 
-                if (target.id == 1) {
-                    timerElement.innerHTML = `Codeforces Round 965(Div 2):<div class="line-separator"><span> ${days}d ${hours}h ${minutes}m ${seconds}s`;
-                } else if (target.id == 2) {
-                    timerElement.innerHTML = `EPIC Institute of Technology Round August 2024 (Div. 1 + Div. 2):<div class="line-separator"><span> ${days}d ${hours}h ${minutes}m ${seconds}s`;
-                } else {
-                    timerElement.innerHTML = `Codeforces Round 966(Div 3):<div class="line-separator"><span> ${days}d ${hours}h ${minutes}m ${seconds}s`;
-                }
-            });
-        }
-
-        const timersContainer = document.getElementById('timers');
-        targetDates.forEach(target => {
-            const timerDiv = document.createElement('div');
-            timerDiv.className = 'timer';
-            timerDiv.id = `timer-${target.id}`;
-            timersContainer.appendChild(timerDiv);
+    fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "OK") {
+                const user = data.result[0];
+                userInfoDiv.innerHTML = `
+                    <h3>User Info</h3>
+                    <p><strong>Handle:</strong> ${user.handle}</p>
+                    <p><strong>Rank:</strong> ${user.rank}</p>
+                    <p><strong>Rating:</strong> ${user.rating}</p>
+                    <p><strong>Max Rank:</strong> ${user.maxRank}</p>
+                    <p><strong>Max Rating:</strong> ${user.maxRating}</p>
+                `;
+            } else {
+                userInfoDiv.innerHTML = `<p>Error: ${data.comment}</p>`;
+            }
+        })
+        .catch((error) => {
+            userInfoDiv.innerHTML = `<p>Error fetching data: ${error.message}</p>`;
         });
+});
 
-        setInterval(updateTimers, 1000);
-        updateTimers();
     </script>
 
     <footer>
