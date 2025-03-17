@@ -3,27 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Website</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Problem Recommender</title>
+    <link rel = "stylesheet" href = "style.css"> 
 </head>
-
 <body>
-    <header>
-        <h3>&nbsp;&nbsp;Hi, this is my website! There isn't really that much going on here right now,
-        so I guess you can see some cool stuff here(might as well make your time visiting this website worth it</h3>
-    </header>  
-    <h4>Here's some interesting CF handle searching stuff:</h4>
-    <div id="userInput">
-        <label for="handle">&nbsp;Enter Handle:</label>
-        <input type="text" id="handle" placeholder="e.g., tourist">
-        <button id="fetchButton">Get User Info</button>
+
+    <h2>Welcome back, {UserID}!</h2>
+
+    <div class="container">
+        <div class="left">
+            <div class="tabs">
+                <div class="tab active">Not Started</div>
+                <div class="tab">In Progress</div>
+                <div class="tab">Completed</div>
+            </div>
+
+            <div class="problems">
+                <div class="problem">
+                    <span>Problem name</span>
+                    <button>Go to problem</button>
+                </div>
+                <div class="problem">
+                    <span>Problem name</span>
+                    <button>Go to problem</button>
+                </div>
+                <div class="problem">
+                    <span>Problem name</span>
+                    <button>Go to problem</button>
+                </div>
+                <div class="problem">
+                    <span>Problem name</span>
+                    <button>Go to problem</button>
+                </div>
+                <div class="problem">
+                    <span>Problem name</span>
+                    <button>Go to problem</button>
+                </div>
+            </div>
+
+            <button class="generate-btn">✨ Generate my own</button>
+        </div>
+        
+        <div class="right">
+            <div class="user-stats">
+                <h3>About you</h3>
+                <div class="stats-box">Rating</div>
+                <div class="stats-box"># problems solved overall</div>
+                <div class="see-more">See more</div>
+            </div>
+        </div>
     </div>
-    
-    <div id="userInfo"></div>
-    <script src = "script.js"></script>
-    <h4>&nbsp;Coming soon(aka never): Codeforces Mock Contest Generator(using AI!)</h4>
-    <footer>
-        <p> Cheezits are cool :D. </p>
-    </footer>
+
 </body>
 </html>
