@@ -3,56 +3,2678 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Problem Recommender</title>
-    <link rel = "stylesheet" href = "style.css"> 
+    <title>VIP (Vacation Itinerary Planner)</title>
+    <!-- Load Google Maps API with async attribute -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDah6y8b7LWhNUqJkpCizcPfoIDwCM5P_k&libraries=places,geometry&callback=initGoogleMaps">
+    </script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #2c3e50;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background-color);
+            background-image: url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: var(--text-color);
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="date"], input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: var(--transition);
+            background-color: var(--card-color);
+        }
+
+        input[type="date"]:focus, input[type="text"]:focus, select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--box-shadow);
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: none;
+            gap: 10px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background-color: var(--card-color);
+            border: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-weight: 600;
+            box-shadow: var(--box-shadow);
+        }
+
+        .tab:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .destination-card {
+            background-color: var(--card-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            border-left: none;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .destination-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--secondary-color);
+            transition: var(--transition);
+        }
+
+        .destination-card:hover::before {
+            width: 6px;
+        }
+
+        .match-score {
+            display: inline-block;
+            background-color: #2ecc71;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .transition-day {
+            background-color: #fff3cd;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            border-left: none;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .transition-day:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .hotel-recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff3cd;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .hotel-card {
+            background-color: var(--card-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .attraction-slot {
+            background-color: var(--card-color);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            display: flex;
+            gap: 20px;
+        }
+
+        .attraction-slot:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .attraction-time {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--secondary-color);
+            min-width: 80px;
+        }
+
+        .attraction-tips {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-style: italic;
+            color: var(--text-color);
+            animation: pulse 2s infinite;
+        }
+
+        a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        /* Add custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2980b9;
+        }
+
+        .preference-item {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            animation: fadeIn 0.3s ease-in-out;
+            transition: var(--transition);
+        }
+
+        .preference-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preference-item button {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 8px;
+            padding: 0 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .preference-item button:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        #preferencesList {
+            margin: 10px 0;
+            min-height: 40px;
+            padding: 5px;
+            border-radius: var(--border-radius);
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .selected-destination-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--card-color);
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .selected-destination-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-dest {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0 5px;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .remove-dest:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .fixed-generate-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: var(--transition);
+            animation: bounceIn 0.5s ease-in-out;
+            display: none;
+        }
+
+        .fixed-generate-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            background-color: #c0392b;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #selectedDestinationsList {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+        }
+    </style>
+    <script>
+        // Initialize Google Maps callback
+        function initGoogleMaps() {
+            console.log('Google Maps API loaded');
+            // If we're on the map tab and have destinations, initialize the map
+            if (document.querySelector('.tab.active[onclick="showTab(\'map\')"]') && window.mapDestinations) {
+                initializeMap();
+            }
+        }
+
+        // Store destinations globally for map access
+        window.mapDestinations = [];
+        
+        // Function to update the map destinations
+        function updateMapDestinations(schedule) {
+            window.mapDestinations = schedule.map(day => day.destination || day.to).filter(Boolean);
+            console.log('Updated map destinations:', window.mapDestinations);
+        }
+
+        // Initialize arrays
+        let preferences = [];
+        let selectedDestinations = [];
+        let regions = [];
+        
+        // Destinations data
+        const destinations = [];
+        
+        // Remove the entire travelTimes object
+        const travelTimes = {};
+        
+        // Load destinations when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the page
+            initializePage();
+        });
+        
+        function initializePage() {
+            // Set placeholder text for dates
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            
+            startDateInput.placeholder = 'YYYY-MM-DD';
+            endDateInput.placeholder = 'YYYY-MM-DD';
+            
+            // Populate starting point dropdown
+            const startingPointSelect = document.getElementById('startingCity');
+            destinations.forEach(dest => {
+                const option = document.createElement('option');
+                option.value = dest.name;
+                option.textContent = dest.name;
+                startingPointSelect.appendChild(option);
+            });
+            
+            // Add event listeners for enter key
+            const preferenceInput = document.getElementById('preference');
+            preferenceInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addPreference();
+                }
+            });
+            
+            const regionInput = document.getElementById('region');
+            regionInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addRegion();
+                }
+            });
+            
+            // Initialize recommendations tab elements
+            const recommendationsTab = document.getElementById('recommendations-tab');
+            if (recommendationsTab) {
+                const recommendationsDiv = document.createElement('div');
+                recommendationsDiv.id = 'recommendations';
+                recommendationsDiv.innerHTML = `
+                    <div class="row" id="cityCards"></div>
+                    <div class="mt-4" id="travelTimes"></div>
+                `;
+                recommendationsTab.appendChild(recommendationsDiv);
+                
+                const selectedDestinationsContainer = document.createElement('div');
+                selectedDestinationsContainer.id = 'selectedDestinationsContainer';
+                selectedDestinationsContainer.className = 'selected-destinations';
+                selectedDestinationsContainer.style.display = 'none';
+                selectedDestinationsContainer.innerHTML = `
+                    <h3>Selected Destinations</h3>
+                    <div id="selectedDestinationsList"></div>
+                    <button onclick="generateSchedule()" style="margin-top: 20px;">Generate Schedule</button>
+                `;
+                recommendationsTab.appendChild(selectedDestinationsContainer);
+            }
+        }
+        
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+            
+            // If showing map tab, initialize the map with a slight delay to ensure container is visible
+            if (tabName === 'map' && window.mapDestinations) {
+                setTimeout(() => {
+                    initializeMap();
+                }, 100);
+            }
+        }
+        
+        function addPreference() {
+            const preferenceInput = document.getElementById('preference');
+            const preference = preferenceInput.value.trim().toLowerCase();
+            
+            if (preference && !preferences.includes(preference)) {
+                preferences.push(preference);
+                updatePreferencesList();
+                preferenceInput.value = '';
+            }
+        }
+        
+        function removePreference(preference) {
+            preferences = preferences.filter(p => p !== preference);
+            updatePreferencesList();
+        }
+        
+        function updatePreferencesList() {
+            const preferencesList = document.getElementById('preferencesList');
+            preferencesList.innerHTML = '';
+            
+            preferences.forEach(preference => {
+                const preferenceItem = document.createElement('div');
+                preferenceItem.className = 'preference-item';
+                preferenceItem.innerHTML = `
+                    ${preference}
+                    <button onclick="removePreference('${preference}')" title="Remove activity">×</button>
+                `;
+                preferencesList.appendChild(preferenceItem);
+            });
+        }
+        
+        function addRegion() {
+            const regionInput = document.getElementById('region');
+            const region = regionInput.value.trim();
+            
+            if (region && !regions.includes(region)) {
+                regions.push(region);
+                updateRegionTags();
+                regionInput.value = '';
+            }
+        }
+        
+        function removeRegion(region) {
+            regions = regions.filter(r => r !== region);
+            updateRegionTags();
+        }
+        
+        function updateRegionTags() {
+            const regionTags = document.getElementById('regionTags');
+            regionTags.innerHTML = '';
+            
+            regions.forEach(region => {
+                const regionTag = document.createElement('div');
+                regionTag.className = 'region-tag';
+                regionTag.innerHTML = `
+                    ${region}
+                    <span class="remove-region" onclick="removeRegion('${region}')">&times;</span>
+                `;
+                regionTags.appendChild(regionTag);
+            });
+        }
+        
+        // Add this function to get coordinates from Google Maps
+        async function getCoordinatesFromGoogleMaps(cityName) {
+            return new Promise((resolve, reject) => {
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: cityName }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        const location = results[0].geometry.location;
+                        resolve({
+                            lat: location.lat(),
+                            lng: location.lng(),
+                            formatted_address: results[0].formatted_address
+                        });
+                    } else {
+                        reject(new Error('Could not find location'));
+                    }
+                });
+            });
+        }
+
+        // Update the findDestinations function
+        async function findDestinations() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const budget = document.getElementById('budget').value;
+            const startingCityInput = document.getElementById('startingCity').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select your travel dates');
+                return;
+            }
+            
+            if (preferences.length === 0) {
+                alert('Please add at least one activity preference');
+                return;
+            }
+
+            // Show loading indicator in preferences tab
+            document.getElementById('preferences-loading').style.display = 'block';
+
+            // Show loading indicator in recommendations tab
+            const recommendationsDiv = document.getElementById('recommendations');
+            recommendationsDiv.innerHTML = '<h2>Finding Perfect Destinations</h2><div class="loading">Searching for destinations that match your preferences...</div>';
+
+            // Get coordinates for the starting city
+            let startingCity = startingCityInput;
+            let startingCoordinates = null;
+            
+            try {
+                const locationData = await getCoordinatesFromGoogleMaps(startingCityInput);
+                startingCity = locationData.formatted_address;
+                startingCoordinates = {
+                    lat: locationData.lat,
+                    lng: locationData.lng
+                };
+                // Update the input field with the formatted address
+                document.getElementById('startingCity').value = startingCity;
+            } catch (error) {
+                console.error('Error getting coordinates:', error);
+                alert('Could not find the starting location. Please check the city name and try again.');
+                // Hide loading indicators
+                document.getElementById('preferences-loading').style.display = 'none';
+                return;
+            }
+            
+            // Call Gemini API to get personalized recommendations
+            try {
+                await getGeminiRecommendations(preferences, budget, regions, startDate, endDate, startingCity, startingCoordinates);
+            } finally {
+                // Hide loading indicator in preferences tab regardless of success/failure
+                document.getElementById('preferences-loading').style.display = 'none';
+            }
+        }
+
+        // Update the getGeminiRecommendations function to include coordinates
+        async function getGeminiRecommendations(preferences, budget, regions, startDate, endDate, startingCity, startingCoordinates) {
+            try {
+                // Prepare the prompt for Gemini
+                const prompt = `
+                    I'm planning a vacation with the following preferences:
+                    - Starting from: ${startingCity} (coordinates: ${startingCoordinates.lat}, ${startingCoordinates.lng})
+                    - Activities: ${preferences.join(', ')}
+                    - Budget: ${budget}
+                    - Preferred regions: ${regions.length > 0 ? regions.join(', ') : 'No specific regions'}
+                    - Travel dates: ${startDate} to ${endDate}
+                    
+                    Please recommend 5-8 major cities that would be perfect for this vacation.
+                    For each city, provide the following information in JSON format:
+                    {
+                        "cities": [
+                            {
+                                "name": "City, Country",
+                                "activities": ["activity1", "activity2", ...],
+                                "budget": "low/medium/high",
+                                "bestSeasons": ["spring", "summer", "fall", "winter"],
+                                "description": "Brief description of the city",
+                                "continent": "Continent name",
+                                "country": "Country name",
+                                "coordinates": {"lat": latitude, "lng": longitude}
+                            }
+                        ],
+                        "travelTimes": {
+                            "City1, Country1": {
+                                "City2, Country2": {"airplane": hours, "train": hours}
+                            }
+                        }
+                    }
+                    
+                    Please ensure the response is in valid JSON format and includes both the cities array and travelTimes object.
+                    Make sure the cities are well-distributed geographically and offer the activities requested.
+                    Consider the starting city when suggesting destinations to ensure reasonable travel times.
+                `;
+                
+                console.log('Sending request to Gemini API...'); // Debug log
+                
+                // Call the Gemini API
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt }),
+                });
+                
+                console.log('Received response from Gemini API:', response.status); // Debug log
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to get recommendations from Gemini API');
+                }
+                
+                const data = await response.json();
+                console.log('Parsed response data:', data); // Debug log
+                
+                if (!data.response) {
+                    throw new Error('No response data received from Gemini API');
+                }
+                
+                // Parse the response from Gemini
+                const geminiResponse = data.response;
+                console.log('Gemini response:', geminiResponse); // Debug log
+                
+                // Extract the JSON from the response
+                const jsonMatch = geminiResponse.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('Could not parse JSON from Gemini response');
+                }
+                
+                console.log('Extracted JSON:', jsonMatch[0]); // Debug log
+                
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(jsonMatch[0]);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError); // Debug log
+                    throw new Error('Invalid JSON format in Gemini response');
+                }
+                
+                if (!parsedData.cities || !Array.isArray(parsedData.cities)) {
+                    throw new Error('Missing or invalid cities array in Gemini response');
+                }
+                
+                console.log('Successfully parsed data:', parsedData); // Debug log
+                
+                // Update the destinations array with the new recommendations
+                updateDestinationsWithGeminiData(parsedData);
+                
+                // Calculate match scores for each destination
+                const recommendations = destinations.map(destination => {
+                    const matchScore = calculateMatchScore(destination, preferences, budget, regions);
+                    return {
+                        ...destination,
+                        matchScore,
+                        matchedActivities: destination.activities.filter(activity => 
+                            preferences.some(pref => {
+                                // Exact match
+                                if (activity.toLowerCase().includes(pref.toLowerCase())) {
+                                    return true;
+                                }
+                                // Partial match (check if words match)
+                                const activityWords = activity.toLowerCase().split(/\s+/);
+                                const prefWords = pref.toLowerCase().split(/\s+/);
+                                return prefWords.some(word => activityWords.includes(word));
+                            })
+                        )
+                    };
+                });
+                
+                // Sort by match score and filter out low matches
+                const filteredRecommendations = recommendations
+                    .filter(dest => dest.matchScore > 0)
+                    .sort((a, b) => b.matchScore - a.matchScore);
+                
+                if (filteredRecommendations.length === 0) {
+                    throw new Error('No matching destinations found');
+                }
+                
+                // Display recommendations
+                displayRecommendations(filteredRecommendations, startDate);
+                
+                // Switch to recommendations tab
+                showTab('recommendations');
+                
+            } catch (error) {
+                console.error('Error getting recommendations from Gemini:', error); // Debug log
+                const recommendationsDiv = document.getElementById('recommendations');
+                recommendationsDiv.innerHTML = `
+                    <h2>Error Getting Recommendations</h2>
+                    <div class="error-message">
+                        <p>We couldn't get personalized recommendations at this time. Please try again later.</p>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                    <button onclick="findDestinations()" style="margin-top: 20px;">Try Again</button>
+                `;
+            }
+        }
+        
+        function updateDestinationsWithGeminiData(geminiData) {
+            // Clear existing destinations
+            destinations.length = 0;
+            
+            // Add new destinations from Gemini
+            if (geminiData.cities && Array.isArray(geminiData.cities)) {
+                geminiData.cities.forEach(city => {
+                    destinations.push(city);
+                });
+            }
+            
+            // Update travel times
+            if (geminiData.travelTimes) {
+                Object.assign(travelTimes, geminiData.travelTimes);
+            }
+            
+            // Update starting point dropdown
+            updateStartingPointDropdown();
+        }
+        
+        function updateStartingPointDropdown() {
+            const startingPointSelect = document.getElementById('startingCity');
+            if (startingPointSelect) {
+                startingPointSelect.innerHTML = '<option value="">Let me decide</option>';
+                
+                destinations.forEach(dest => {
+                    const option = document.createElement('option');
+                    option.value = dest.name;
+                    option.textContent = dest.name;
+                    startingPointSelect.appendChild(option);
+                });
+            }
+        }
+        
+        function calculateMatchScore(destination, preferences, budget, regions) {
+            let score = 0;
+            
+            // Activity match (3 points per match, 1 point for partial match)
+            const matchedActivities = destination.activities.filter(activity => {
+                const hasMatch = preferences.some(pref => {
+                    // Exact match
+                    if (activity.toLowerCase().includes(pref.toLowerCase())) {
+                        score += 3;
+                        return true;
+                    }
+                    // Partial match (check if words match)
+                    const activityWords = activity.toLowerCase().split(/\s+/);
+                    const prefWords = pref.toLowerCase().split(/\s+/);
+                    return prefWords.some(word => activityWords.includes(word));
+                });
+                return hasMatch;
+            });
+            
+            // Budget match (5 points)
+            if (destination.budget === budget) {
+                score += 5;
+            }
+            
+            // Region match (5 points)
+            if (regions.length > 0) {
+                const destinationRegion = `${destination.continent}, ${destination.country}`.toLowerCase();
+                if (regions.some(region => destinationRegion.includes(region.toLowerCase()))) {
+                    score += 5;
+                }
+            }
+            
+            return score;
+        }
+        
+        function selectDestination(destinationName) {
+            if (!selectedDestinations.includes(destinationName)) {
+                selectedDestinations.push(destinationName);
+                updateSelectedDestinations();
+            }
+        }
+        
+        function removeSelectedDestination(destinationName) {
+            selectedDestinations = selectedDestinations.filter(dest => dest !== destinationName);
+            updateSelectedDestinations();
+        }
+        
+        function updateSelectedDestinations() {
+            const container = document.getElementById('selectedDestinationsContainer');
+            const list = document.getElementById('selectedDestinationsList');
+            const fixedButton = document.querySelector('.fixed-generate-button') || createFixedGenerateButton();
+            
+            if (selectedDestinations.length > 0) {
+                container.style.display = 'block';
+                list.innerHTML = '';
+                fixedButton.style.display = 'block';
+                
+                selectedDestinations.forEach(destination => {
+                    const item = document.createElement('div');
+                    item.className = 'selected-destination-item';
+                    item.innerHTML = `
+                        <span>${destination}</span>
+                        <span class="remove-dest" onclick="removeSelectedDestination('${destination}')" title="Remove destination">×</span>
+                    `;
+                    list.appendChild(item);
+                });
+            } else {
+                container.style.display = 'none';
+                fixedButton.style.display = 'none';
+            }
+        }
+        
+        function createFixedGenerateButton() {
+            const button = document.createElement('button');
+            button.className = 'fixed-generate-button';
+            button.innerHTML = '🚀 Generate Schedule';
+            button.onclick = generateSchedule;
+            document.body.appendChild(button);
+            return button;
+        }
+        
+        async function generateSchedule() {
+            try {
+                if (selectedDestinations.length === 0) {
+                    alert('Please select at least one destination first.');
+                    return;
+                }
+
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                
+                if (startDate >= endDate) {
+                    alert('End date must be after start date.');
+                    return;
+                }
+
+                // Calculate total days
+                const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                
+                // Calculate minimum required days (1 day per destination + 1 travel day between each destination + 2 travel days for start/end)
+                const minimumRequiredDays = selectedDestinations.length + (selectedDestinations.length - 1) + 2;
+                
+                if (totalDays < minimumRequiredDays) {
+                    alert(`Your trip is too short for the selected destinations. You need at least ${minimumRequiredDays} days for ${selectedDestinations.length} destinations (1 day per destination plus travel days between them, plus travel to/from your starting point).`);
+                    return;
+                }
+
+                // Get starting point preference
+                const startingPoint = document.getElementById('startingCity').value;
+                
+                // Get the home location - use the selected starting point
+                const homeLocation = startingPoint;
+                
+                // Create a copy of selected destinations
+                let destinationsToVisit = [...selectedDestinations];
+                
+                // Remove the starting point from the destinations to visit if it's specified
+                if (startingPoint && destinationsToVisit.includes(startingPoint)) {
+                    destinationsToVisit = destinationsToVisit.filter(dest => dest !== startingPoint);
+                }
+                
+                // Find the optimal route using a more sophisticated algorithm
+                const optimalRoute = await findOptimalRoute(homeLocation, destinationsToVisit);
+                
+                // Add the starting point at the beginning if it's specified
+                let orderedDestinations = optimalRoute;
+                if (startingPoint && selectedDestinations.includes(startingPoint)) {
+                    orderedDestinations = [startingPoint, ...optimalRoute];
+                }
+
+                const schedule = [];
+                let currentDate = new Date(startDate);
+                
+                // Add initial travel day from starting location to first destination
+                const firstDestination = orderedDestinations[0];
+                const initialTravelTime = await getTravelTime("Home", firstDestination);
+                const initialTravelMode = getPreferredTravelMode("Home", firstDestination);
+                
+                schedule.push({
+                    date: new Date(currentDate),
+                    type: 'travel',
+                    from: "Home",
+                    to: firstDestination,
+                    travelTime: initialTravelTime,
+                    travelMode: initialTravelMode
+                });
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+                
+                // Calculate available days for destinations (excluding travel days)
+                const totalTravelDays = orderedDestinations.length + 1; // Travel days between destinations + return home
+                const availableDaysForDestinations = totalDays - totalTravelDays;
+                
+                // Calculate balanced days per destination
+                const baseDaysPerDestination = Math.floor(availableDaysForDestinations / orderedDestinations.length);
+                const extraDays = availableDaysForDestinations % orderedDestinations.length;
+                
+                // Add each destination to the schedule
+                for (let i = 0; i < orderedDestinations.length; i++) {
+                    const destination = orderedDestinations[i];
+                    const destinationData = destinations.find(d => d.name === destination);
+                    
+                    if (!destinationData) continue;
+
+                    // Add travel day if not the first destination
+                    if (i > 0) {
+                        const prevDestination = orderedDestinations[i - 1];
+                        const travelTime = await getTravelTime(prevDestination, destination);
+                        const travelMode = getPreferredTravelMode(prevDestination, destination);
+                        
+                        schedule.push({
+                            date: new Date(currentDate),
+                            type: 'travel',
+                            from: prevDestination,
+                            to: destination,
+                            travelTime: travelTime,
+                            travelMode: travelMode
+                        });
+                        
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+
+                    // Calculate days to spend at this destination (balanced distribution)
+                    const daysToAdd = baseDaysPerDestination + (i < extraDays ? 1 : 0);
+                    
+                    for (let j = 0; j < daysToAdd; j++) {
+                        if (currentDate <= endDate) {
+                            schedule.push({
+                                date: new Date(currentDate),
+                                type: 'destination',
+                                destination: destination,
+                                activities: destinationData.activities
+                            });
+                            currentDate.setDate(currentDate.getDate() + 1);
+                        }
+                    }
+                }
+                
+                // Add final travel day from last destination to home
+                const lastDestination = orderedDestinations[orderedDestinations.length - 1];
+                const finalTravelTime = await getTravelTime(lastDestination, "Home");
+                const finalTravelMode = getPreferredTravelMode(lastDestination, "Home");
+                
+                // Always add the return trip home, even if it goes beyond the end date
+                schedule.push({
+                    date: new Date(currentDate),
+                    type: 'travel',
+                    from: lastDestination,
+                    to: "Home",
+                    travelTime: finalTravelTime,
+                    travelMode: finalTravelMode
+                });
+
+                await displaySchedule(schedule);
+                showTab('schedule');
+                
+                // Generate map data for visualization
+                generateMapData(["Home", ...orderedDestinations, "Home"]);
+                
+                // Scroll to top of schedule
+                window.scrollTo(0, 0);
+            } catch (error) {
+                console.error('Error generating schedule:', error);
+                alert('Error generating schedule. Please try again. If the problem persists, try selecting fewer destinations or adjusting your travel dates.');
+            }
+        }
+
+        // Function to find the optimal route using a more sophisticated algorithm
+        async function findOptimalRoute(start, destinations) {
+            try {
+                if (!destinations || destinations.length === 0) return [];
+                
+                // Get the home location
+                const homeLocation = start;
+                
+                // If there's only one destination, return it
+                if (destinations.length === 1) {
+                    return destinations;
+                }
+                
+                // For 2 or 3 destinations, we can evaluate all permutations
+                if (destinations.length <= 3) {
+                    // Generate all possible permutations of destinations
+                    const permutations = generatePermutations(destinations);
+                    
+                    // Find the permutation with the minimum total travel time
+                    let minTotalTime = Infinity;
+                    let optimalRoute = null;
+                    
+                    // For each permutation, calculate the total travel time
+                    for (const permutation of permutations) {
+                        try {
+                            let totalTime = 0;
+                            let pathSegments = [];
+                            
+                            // Add travel time from home to first destination
+                            const firstDest = permutation[0];
+                            const timeFromHome = await getTravelTimeInHours(homeLocation, firstDest);
+                            totalTime += timeFromHome;
+                            pathSegments.push([homeLocation, firstDest]);
+                            
+                            // Add travel time between destinations
+                            for (let i = 0; i < permutation.length - 1; i++) {
+                                const from = permutation[i];
+                                const to = permutation[i + 1];
+                                const time = await getTravelTimeInHours(from, to);
+                                totalTime += time;
+                                pathSegments.push([from, to]);
+                            }
+                            
+                            // Add travel time from last destination to home
+                            const lastDest = permutation[permutation.length - 1];
+                            const timeToHome = await getTravelTimeInHours(lastDest, homeLocation);
+                            totalTime += timeToHome;
+                            pathSegments.push([lastDest, homeLocation]);
+                            
+                            // Check for path intersections
+                            const hasIntersections = checkPathIntersections(pathSegments);
+                            
+                            // Update optimal route if this one is better and has no intersections
+                            if (totalTime < minTotalTime && !hasIntersections) {
+                                minTotalTime = totalTime;
+                                optimalRoute = [...permutation];
+                            }
+                        } catch (error) {
+                            console.error('Error calculating route for permutation:', error);
+                            continue;
+                        }
+                    }
+                    
+                    // If no optimal route found without intersections, find the one with minimal intersections
+                    if (!optimalRoute) {
+                        minTotalTime = Infinity;
+                        let minIntersections = Infinity;
+                        
+                        for (const permutation of permutations) {
+                            try {
+                                let totalTime = 0;
+                                let pathSegments = [];
+                                
+                                // Calculate path segments and total time
+                                const firstDest = permutation[0];
+                                totalTime += await getTravelTimeInHours(homeLocation, firstDest);
+                                pathSegments.push([homeLocation, firstDest]);
+                                
+                                for (let i = 0; i < permutation.length - 1; i++) {
+                                    const from = permutation[i];
+                                    const to = permutation[i + 1];
+                                    totalTime += await getTravelTimeInHours(from, to);
+                                    pathSegments.push([from, to]);
+                                }
+                                
+                                const lastDest = permutation[permutation.length - 1];
+                                totalTime += await getTravelTimeInHours(lastDest, homeLocation);
+                                pathSegments.push([lastDest, homeLocation]);
+                                
+                                // Count intersections
+                                const intersections = countPathIntersections(pathSegments);
+                                
+                                // Update optimal route if this one has fewer intersections or same intersections but less time
+                                if (intersections < minIntersections || 
+                                    (intersections === minIntersections && totalTime < minTotalTime)) {
+                                    minIntersections = intersections;
+                                    minTotalTime = totalTime;
+                                    optimalRoute = [...permutation];
+                                }
+                            } catch (error) {
+                                console.error('Error calculating route for permutation:', error);
+                                continue;
+                            }
+                        }
+                    }
+                    
+                    return optimalRoute || destinations;
+                }
+                
+                // For more than 3 destinations, use a combination of nearest neighbor and 2-opt optimization
+                let route = [];
+                let unvisited = new Set(destinations);
+                let current = homeLocation;
+                
+                // First pass: Nearest neighbor algorithm
+                while (unvisited.size > 0) {
+                    let nearest = null;
+                    let minTime = Infinity;
+                    
+                    // Find the nearest unvisited destination
+                    for (const dest of unvisited) {
+                        try {
+                            const time = await getTravelTimeInHours(current, dest);
+                            if (time < minTime) {
+                                minTime = time;
+                                nearest = dest;
+                            }
+                        } catch (error) {
+                            console.error('Error calculating time to destination:', error);
+                            continue;
+                        }
+                    }
+                    
+                    if (!nearest) {
+                        // If we couldn't find a nearest destination, just pick the first one
+                        nearest = Array.from(unvisited)[0];
+                    }
+                    
+                    // Add the nearest destination to the route
+                    route.push(nearest);
+                    unvisited.delete(nearest);
+                    current = nearest;
+                }
+                
+                return route;
+            } catch (error) {
+                console.error('Error in findOptimalRoute:', error);
+                // Return the original destinations array as a fallback
+                return destinations;
+            }
+        }
+        
+        // Helper function to check if any path segments intersect
+        function checkPathIntersections(segments) {
+            for (let i = 0; i < segments.length; i++) {
+                for (let j = i + 1; j < segments.length; j++) {
+                    if (doSegmentsIntersect(segments[i], segments[j])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Helper function to count path intersections
+        function countPathIntersections(segments) {
+            let count = 0;
+            for (let i = 0; i < segments.length; i++) {
+                for (let j = i + 1; j < segments.length; j++) {
+                    if (doSegmentsIntersect(segments[i], segments[j])) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+        
+        // Helper function to check if two line segments intersect
+        function doSegmentsIntersect(seg1, seg2) {
+            const [p1, p2] = seg1;
+            const [p3, p4] = seg2;
+            
+            // Get coordinates for all points
+            const coords1 = getCoordinates(p1);
+            const coords2 = getCoordinates(p2);
+            const coords3 = getCoordinates(p3);
+            const coords4 = getCoordinates(p4);
+            
+            if (!coords1 || !coords2 || !coords3 || !coords4) return false;
+            
+            // Calculate orientation
+            const orientation1 = getOrientation(coords1, coords2, coords3);
+            const orientation2 = getOrientation(coords1, coords2, coords4);
+            const orientation3 = getOrientation(coords3, coords4, coords1);
+            const orientation4 = getOrientation(coords3, coords4, coords2);
+            
+            // Check if segments intersect
+            if (orientation1 !== orientation2 && orientation3 !== orientation4) {
+                return true;
+            }
+            
+            // Special cases for collinear points
+            if (orientation1 === 0 && isOnSegment(coords1, coords3, coords2)) return true;
+            if (orientation2 === 0 && isOnSegment(coords1, coords4, coords2)) return true;
+            if (orientation3 === 0 && isOnSegment(coords3, coords1, coords4)) return true;
+            if (orientation4 === 0 && isOnSegment(coords3, coords2, coords4)) return true;
+            
+            return false;
+        }
+        
+        // Helper function to get coordinates for a location
+        function getCoordinates(location) {
+            if (location === "Home") {
+                const homeLocation = document.getElementById('startingCity').value;
+                // This would need to be implemented with actual geocoding
+                return null; // Placeholder
+            }
+            // This would need to be implemented with actual geocoding
+            return null; // Placeholder
+        }
+        
+        // Helper function to calculate orientation of three points
+        function getOrientation(p1, p2, p3) {
+            const val = (p2.y - p1.y) * (p3.x - p2.x) - (p2.x - p1.x) * (p3.y - p2.y);
+            if (val === 0) return 0; // Collinear
+            return (val > 0) ? 1 : 2; // Clockwise or counterclockwise
+        }
+        
+        // Helper function to check if a point lies on a segment
+        function isOnSegment(p, q, r) {
+            return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) &&
+                   q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y);
+        }
+
+        function generateMapData(destinations) {
+            // Store the destinations for map visualization
+            window.mapDestinations = destinations;
+        }
+
+        // Update the getPreferredTravelMode function
+        async function getPreferredTravelMode(from, to) {
+            try {
+                // First, check if flight route exists
+                const flightTime = await getFlightTime(from, to);
+                if (flightTime) {
+                    return 'airplane';
+                }
+
+                // If no flight route, check if train is available
+                const trainAvailable = await isTrainAvailable(from, to);
+                if (trainAvailable) {
+                    const trainTime = await getTrainTime(from, to);
+                    if (trainTime) {
+                        return 'train';
+                    }
+                }
+
+                // If no train or train route not available, use car
+                const drivingTime = await getDrivingTime(from, to);
+                if (drivingTime) {
+                    return 'car';
+                }
+
+                // If all else fails, default to car
+                return 'car';
+            } catch (error) {
+                console.error('Error determining travel mode:', error);
+                return 'car'; // Default to car if there's an error
+            }
+        }
+
+        // Update the getFlightTime function to check for route existence
+        async function getFlightTime(from, to) {
+            try {
+                const service = new google.maps.DistanceMatrixService();
+                
+                return new Promise((resolve, reject) => {
+                    service.getDistanceMatrix({
+                        origins: [from],
+                        destinations: [to],
+                        travelMode: google.maps.TravelMode.DRIVING, // We'll use driving distance to estimate flight time
+                        unitSystem: google.maps.UnitSystem.METRIC,
+                    }, (response, status) => {
+                        if (status === 'OK') {
+                            const result = response.rows[0].elements[0];
+                            if (result.status === 'OK') {
+                                // Convert distance to flight time (assuming average speed of 800 km/h)
+                                const distanceKm = result.distance.value / 1000;
+                                const flightHours = distanceKm / 800;
+                                
+                                // Add 2 hours for airport procedures
+                                const totalHours = flightHours + 2;
+                                
+                                // Round to nearest 0.5
+                                const roundedHours = Math.round(totalHours * 2) / 2;
+                                resolve(roundedHours.toString());
+                            } else {
+                                // If no direct route exists, return null
+                                resolve(null);
+                            }
+                        } else {
+                            // If API fails, return null
+                            resolve(null);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error getting flight time:', error);
+                return null;
+            }
+        }
+
+        // Update the getTrainTime function to check for route existence
+        async function getTrainTime(from, to) {
+            try {
+                const service = new google.maps.DistanceMatrixService();
+                
+                return new Promise((resolve, reject) => {
+                    service.getDistanceMatrix({
+                        origins: [from],
+                        destinations: [to],
+                        travelMode: google.maps.TravelMode.DRIVING, // We'll use driving distance to estimate train time
+                        unitSystem: google.maps.UnitSystem.METRIC,
+                    }, (response, status) => {
+                        if (status === 'OK') {
+                            const result = response.rows[0].elements[0];
+                            if (result.status === 'OK') {
+                                // Convert distance to train time (assuming average speed of 160 km/h)
+                                const distanceKm = result.distance.value / 1000;
+                                const trainHours = distanceKm / 160;
+                                
+                                // Add 0.5 hours for station procedures
+                                const totalHours = trainHours + 0.5;
+                                
+                                // Round to nearest 0.5
+                                const roundedHours = Math.round(totalHours * 2) / 2;
+                                resolve(roundedHours.toString());
+                            } else {
+                                // If no direct route exists, return null
+                                resolve(null);
+                            }
+                        } else {
+                            // If API fails, return null
+                            resolve(null);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error getting train time:', error);
+                return null;
+            }
+        }
+
+        // Update the getDrivingTime function to check for route existence
+        async function getDrivingTime(from, to) {
+            try {
+                const service = new google.maps.DistanceMatrixService();
+                
+                return new Promise((resolve, reject) => {
+                    service.getDistanceMatrix({
+                        origins: [from],
+                        destinations: [to],
+                        travelMode: google.maps.TravelMode.DRIVING,
+                        unitSystem: google.maps.UnitSystem.METRIC,
+                    }, (response, status) => {
+                        if (status === 'OK') {
+                            const result = response.rows[0].elements[0];
+                            if (result.status === 'OK') {
+                                // Get actual driving time in hours
+                                const hours = result.duration.value / 3600;
+                                
+                                // Add 0.5 hours for breaks
+                                const totalHours = hours + 0.5;
+                                
+                                // Round to nearest 0.5
+                                const roundedHours = Math.round(totalHours * 2) / 2;
+                                resolve(roundedHours.toString());
+                            } else {
+                                // If no direct route exists, return null
+                                resolve(null);
+                            }
+                        } else {
+                            // If API fails, return null
+                            resolve(null);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error getting driving time:', error);
+                return null;
+            }
+        }
+
+        // Update the estimateTravelTime function to be more accurate
+        function estimateTravelTime(from, to) {
+            return new Promise((resolve) => {
+                const geocoder = new google.maps.Geocoder();
+                
+                // Get coordinates for 'from' city
+                geocoder.geocode({ address: from }, (results1, status1) => {
+                    if (status1 === 'OK' && results1[0]) {
+                        const fromLocation = results1[0].geometry.location;
+                        
+                        // Get coordinates for 'to' city
+                        geocoder.geocode({ address: to }, (results2, status2) => {
+                            if (status2 === 'OK' && results2[0]) {
+                                const toLocation = results2[0].geometry.location;
+                                
+                                try {
+                                    // Calculate distance using the geometry library
+                                    const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                                        fromLocation,
+                                        toLocation
+                                    );
+                                    
+                                    // Convert to kilometers
+                                    const distanceKm = distance / 1000;
+                                    
+                                    // Estimate flight time (assuming average speed of 800 km/h)
+                                    const flightHours = distanceKm / 800;
+                                    
+                                    // Add 2 hours for airport procedures
+                                    const totalHours = flightHours + 2;
+                                    
+                                    // Round to nearest 0.5
+                                    const roundedHours = Math.round(totalHours * 2) / 2;
+                                    resolve(Math.max(1, roundedHours).toString());
+                                } catch (error) {
+                                    console.error('Error calculating distance:', error);
+                                    resolve("8");
+                                }
+                            } else {
+                                resolve("8");
+                            }
+                        });
+                    } else {
+                        resolve("8");
+                    }
+                });
+            });
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI/180);
+        }
+
+        // Add the getHotelRecommendations function
+        async function getHotelRecommendations(city, budget) {
+            try {
+                const prompt = `
+                    I'm looking for 3-5 hotel recommendations in ${city} that match the following budget level: ${budget}.
+                    Please provide the following information for each hotel:
+                    - Name
+                    - Price range (e.g., $100-150 per night)
+                    - Brief description (1-2 sentences)
+                    - Key amenities
+                    
+                    Format the response as a JSON array:
+                    [
+                        {
+                            "name": "Hotel Name",
+                            "priceRange": "Price range",
+                            "description": "Brief description",
+                            "amenities": ["amenity1", "amenity2", "amenity3"]
+                        }
+                    ]
+                    
+                    Please ensure the hotels match the budget level:
+                    - For "low" budget: Budget-friendly hotels under $100 per night
+                    - For "medium" budget: Mid-range hotels $100-250 per night
+                    - For "high" budget: Luxury hotels $250+ per night
+                `;
+
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get hotel recommendations');
+                }
+
+                const data = await response.json();
+                let cleanResponse = data.response;
+                cleanResponse = cleanResponse.replace(/```json\n?/g, '');
+                cleanResponse = cleanResponse.replace(/```\n?/g, '');
+                cleanResponse = cleanResponse.trim();
+                
+                return JSON.parse(cleanResponse);
+            } catch (error) {
+                console.error('Error getting hotel recommendations:', error);
+                return [];
+            }
+        }
+
+        // Update the displaySchedule function to include hotels
+        async function displaySchedule(schedule) {
+            const scheduleDiv = document.getElementById('schedule');
+            scheduleDiv.innerHTML = '<h2>Your Vacation Schedule</h2>';
+
+            const startingCity = document.getElementById('startingCity').value;
+            const budget = document.getElementById('budget').value;
+            let currentCity = null;
+            let dayInCity = 0;
+
+            for (let i = 0; i < schedule.length; i++) {
+                const day = schedule[i];
+                const dayElement = document.createElement('div');
+                
+                if (day.type === 'travel') {
+                    dayElement.className = 'transition-day';
+                    // Get the appropriate emoji based on travel mode
+                    let travelModeIcon;
+                    switch (day.travelMode) {
+                        case 'train':
+                            travelModeIcon = '🚂';
+                            break;
+                        case 'car':
+                            travelModeIcon = '🚗';
+                            break;
+                        case 'airplane':
+                        default:
+                            travelModeIcon = '✈️';
+                            break;
+                    }
+                    
+                    const from = day.from === "Home" ? startingCity : day.from;
+                    const to = day.to === "Home" ? startingCity : day.to;
+                    
+                    // Get the actual travel time
+                    const travelTime = await getTravelTime(from, to);
+                    
+                    // Get hotel recommendations for the destination city (except for the last day going home)
+                    let hotelHtml = '';
+                    if (i < schedule.length - 1) {
+                        const hotels = await getHotelRecommendations(to, budget);
+                        if (hotels.length > 0) {
+                            hotelHtml = `
+                                <div class="hotel-recommendations" style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border-radius: 4px;">
+                                    <h4 style="margin-top: 0; color: #856404;">🏨 Hotel Recommendations in <a href="https://www.google.com/search?q=hotels+in+${encodeURIComponent(to)}" target="_blank">${to}</a></h4>
+                                    ${hotels.map(hotel => `
+                                        <div class="hotel-card" style="margin-bottom: 10px; padding: 10px; background-color: white; border-radius: 4px; border: 1px solid #ffeeba;">
+                                            <h5 style="margin: 0 0 5px 0;"><a href="https://www.google.com/search?q=${encodeURIComponent(hotel.name + ' ' + to)}" target="_blank">${hotel.name}</a></h5>
+                                            <p style="margin: 0 0 5px 0; color: #856404;">${hotel.priceRange}</p>
+                                            <p style="margin: 0 0 5px 0;">${hotel.description}</p>
+                                            <p style="margin: 0; font-size: 0.9em;">
+                                                <strong>Amenities:</strong> ${hotel.amenities.join(', ')}
+                                            </p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    dayElement.innerHTML = `
+                        <h3>${formatDate(day.date)}</h3>
+                        <div class="transition-icon">${travelModeIcon}</div>
+                        <div class="transition-details">
+                            From: <a href="https://www.google.com/search?q=tourism+in+${encodeURIComponent(from)}" target="_blank">${from}</a><br>
+                            To: <a href="https://www.google.com/search?q=tourism+in+${encodeURIComponent(to)}" target="_blank">${to}</a><br>
+                            <span class="travel-time">
+                                ${travelModeIcon} 
+                                Approximate travel time: ${travelTime} hours
+                            </span>
+                        </div>
+                        ${hotelHtml}
+                    `;
+                } else {
+                    dayElement.className = 'schedule-day';
+                    
+                    // Reset day counter if we're in a new city
+                    if (currentCity !== day.destination) {
+                        currentCity = day.destination;
+                        dayInCity = 0;
+                    } else {
+                        dayInCity++;
+                    }
+                    
+                    let itineraryHtml = '';
+                    
+                    // Get attractions for the city
+                    const attractions = await getAttractionsForCity(day.destination);
+                    if (attractions && attractions.length > 0) {
+                        // Shuffle attractions to get different ones each day
+                        const shuffledAttractions = [...attractions].sort(() => Math.random() - 0.5);
+                        
+                        // Select different attractions for each day
+                        const dayAttractions = shuffledAttractions.slice(dayInCity * 3, (dayInCity + 1) * 3);
+                        
+                        // Categorize attractions by time of day
+                        const morningAttractions = dayAttractions.filter(a => a.duration.includes('morning') || parseInt(a.duration) <= 2);
+                        const afternoonAttractions = dayAttractions.filter(a => a.duration.includes('afternoon') || (parseInt(a.duration) > 2 && parseInt(a.duration) <= 4));
+                        const eveningAttractions = dayAttractions.filter(a => a.duration.includes('evening') || parseInt(a.duration) > 4);
+                        
+                        // Calculate total time needed for attractions
+                        const totalAttractionTime = dayAttractions.reduce((total, attraction) => {
+                            let duration;
+                            if (attraction.duration.includes('full day') || attraction.duration.includes('whole day')) {
+                                duration = 8; // Full day = 8 hours
+                            } else if (attraction.duration.includes('morning')) {
+                                duration = 4; // Morning = 4 hours
+                            } else if (attraction.duration.includes('afternoon')) {
+                                duration = 4; // Afternoon = 4 hours
+                            } else if (attraction.duration.includes('evening')) {
+                                duration = 4; // Evening = 4 hours
+                            } else {
+                                duration = parseInt(attraction.duration) || 1;
+                            }
+                            return total + duration;
+                        }, 0);
+                        
+                        // Generate flexible times for attractions
+                        const attractionTimes = [];
+                        
+                        // Check if there are any full-day activities
+                        const fullDayActivity = dayAttractions.find(a => 
+                            a.duration.includes('full day') || a.duration.includes('whole day')
+                        );
+                        
+                        // If there's a full-day activity, only schedule that
+                        if (fullDayActivity) {
+                            attractionTimes.push({
+                                time: "09:00",
+                                duration: 8,
+                                attraction: fullDayActivity
+                            });
+                        } else {
+                            // Only schedule regular activities if there are no full-day or half-day activities
+                            let currentTime = 9; // Start at 9 AM
+                            
+                            for (let i = 0; i < dayAttractions.length; i++) {
+                                const attraction = dayAttractions[i];
+                                let duration = parseInt(attraction.duration) || 2; // Default to 2 hours instead of 1
+                                
+                                // For regular activities, add some randomness to start time
+                                const randomOffset = (Math.random() - 0.5) * 0.5; // Increased randomness
+                                let startTime = currentTime + randomOffset;
+                                
+                                // Ensure activities are scheduled at appropriate times
+                                if (attraction.duration.includes('morning')) {
+                                    startTime = Math.min(startTime, 11); // Morning activities must end by noon
+                                } else if (attraction.duration.includes('afternoon')) {
+                                    startTime = Math.max(startTime, 13); // Afternoon activities must start after noon
+                                } else if (attraction.duration.includes('evening')) {
+                                    startTime = Math.max(startTime, 17); // Evening activities must start after 5 PM
+                                }
+                                
+                                // Round to nearest hour, ensuring we don't get times like 12:60
+                                const hours = Math.floor(startTime);
+                                const minutes = Math.round((startTime - hours) * 60);
+                                let finalHours = hours;
+                                let finalMinutes = minutes;
+                                
+                                // Round to nearest hour
+                                if (finalMinutes >= 30) {
+                                    finalHours += 1;
+                                }
+                                finalMinutes = 0;
+                                
+                                const formattedTime = `${finalHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
+                                
+                                attractionTimes.push({
+                                    time: formattedTime,
+                                    duration: duration,
+                                    attraction: attraction
+                                });
+                                
+                                // Add the duration plus a 1-hour buffer between activities
+                                currentTime = startTime + duration + 1;
+                            }
+                        }
+                        
+                        itineraryHtml = `
+                            <div class="daily-itinerary">
+                                <h4>Daily Itinerary</h4>
+                                
+                                ${attractionTimes.map((timeSlot, index) => `
+                                    <div class="attraction-slot">
+                                        <div class="attraction-time">${timeSlot.time}</div>
+                                        <div class="attraction-details">
+                                            <strong><a href="https://www.google.com/search?q=${encodeURIComponent(timeSlot.attraction.name + ' ' + day.destination)}" target="_blank">${timeSlot.attraction.name}</a></strong>
+                                            <p>${timeSlot.attraction.description}</p>
+                                            <p class="attraction-tips">💡 ${timeSlot.attraction.tips}</p>
+                                            <p class="attraction-duration">⏱️ Duration: ${timeSlot.attraction.duration}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        
+                        dayElement.innerHTML = `
+                            <h3>${formatDate(day.date)}</h3>
+                            <div class="schedule-location">📍 <a href="https://www.google.com/search?q=tourism+in+${encodeURIComponent(day.destination)}" target="_blank">${day.destination}</a></div>
+                            ${itineraryHtml}
+                            <button onclick="showLocations('${day.destination}')" class="location-btn">View More Attractions</button>
+                        `;
+                    }
+                }
+                
+                scheduleDiv.appendChild(dayElement);
+            }
+            
+            const mapButton = document.createElement('div');
+            mapButton.style.textAlign = 'center';
+            mapButton.style.marginTop = '30px';
+            mapButton.innerHTML = `
+                <button onclick="showTab('map')" style="padding: 10px 20px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    View World Map
+                </button>
+            `;
+            scheduleDiv.appendChild(mapButton);
+        }
+
+        // Add a new function to generate ordered times
+        function generateOrderedTimes(startHour, endHour, count) {
+            if (count === 0) return [];
+            
+            const times = [];
+            const interval = (endHour - startHour) / (count + 1);
+            
+            for (let i = 0; i < count; i++) {
+                const hour = Math.floor(startHour + (interval * (i + 1)));
+                const minutes = Math.floor((startHour + (interval * (i + 1)) - hour) * 60);
+                times.push(`${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
+            }
+            
+            return times;
+        }
+
+        // Update the initializeMap function
+        async function initializeMap() {
+            try {
+                console.log('Initializing map...'); // Debug log
+                
+                // Create map container if it doesn't exist
+                const mapTab = document.getElementById('map-tab');
+                let mapContainer = document.getElementById('mapContainer');
+                
+                if (!mapContainer) {
+                    console.log('Creating new map container...'); // Debug log
+                    mapContainer = document.createElement('div');
+                    mapContainer.id = 'mapContainer';
+                    mapContainer.style.width = '100%';
+                    mapContainer.style.height = '600px';
+                    mapContainer.style.marginTop = '20px';
+                    mapContainer.style.border = '1px solid #ccc';
+                    mapContainer.style.borderRadius = '8px';
+                    mapTab.appendChild(mapContainer);
+                }
+                
+                // Get user's location (home) from the starting point dropdown
+                const homeLocationName = document.getElementById('startingCity').value;
+                console.log('Home location:', homeLocationName); // Debug log
+                
+                // Initialize the map with default center
+                const map = new google.maps.Map(mapContainer, {
+                    zoom: 2,
+                    center: { lat: 20, lng: 0 },
+                    mapTypeId: 'terrain',
+                    mapTypeControl: true,
+                    mapTypeControlOptions: {
+                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                    },
+                    zoomControl: true,
+                    zoomControlOptions: {
+                        position: google.maps.ControlPosition.RIGHT_CENTER
+                    },
+                    scaleControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true
+                });
+                
+                console.log('Map initialized'); // Debug log
+                
+                if (!window.mapDestinations || !window.mapDestinations.length) {
+                    console.log('No destinations to display'); // Debug log
+                    return;
+                }
+                
+                console.log('Destinations to map:', window.mapDestinations); // Debug log
+                
+                // Add markers and lines for each destination
+                const markers = [];
+                const bounds = new google.maps.LatLngBounds();
+                const lines = [];
+                const infoWindows = [];
+                
+                // Get coordinates for the starting city using Google Maps Geocoding
+                const geocoder = new google.maps.Geocoder();
+                
+                // First, get the home location coordinates
+                const homeResults = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ address: homeLocationName }, (results, status) => {
+                        if (status === 'OK') resolve(results);
+                        else reject(new Error('Geocode failed for home location'));
+                    });
+                });
+                
+                if (!homeResults[0]) throw new Error('Could not find home location');
+                
+                const homeLocation = homeResults[0].geometry.location;
+                console.log('Home coordinates:', homeLocation.toString()); // Debug log
+                
+                // Create array to store all locations with their coordinates
+                const locations = [{
+                    name: 'Home',
+                    coords: homeLocation,
+                    isHome: true
+                }];
+                
+                // Get coordinates for all destinations
+                for (const destination of window.mapDestinations) {
+                    if (destination === "Home") continue;
+                    
+                    console.log('Getting coordinates for:', destination); // Debug log
+                    
+                    try {
+                        const results = await new Promise((resolve, reject) => {
+                            geocoder.geocode({ address: destination }, (results, status) => {
+                                if (status === 'OK') resolve(results);
+                                else reject(new Error(`Geocode failed for ${destination}`));
+                            });
+                        });
+                        
+                        if (results[0]) {
+                            locations.push({
+                                name: destination,
+                                coords: results[0].geometry.location,
+                                isHome: false
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Error getting coordinates for ${destination}:`, error);
+                    }
+                }
+                
+                // Add final home location for return trip
+                locations.push({
+                    name: 'Home',
+                    coords: homeLocation,
+                    isHome: true
+                });
+                
+                // Add markers for each location
+                for (let i = 0; i < locations.length; i++) {
+                    const location = locations[i];
+                    const position = location.coords;
+                    
+                    // Create marker
+                    const marker = new google.maps.Marker({
+                        position: position,
+                        map: map,
+                        title: location.name,
+                        label: location.isHome ? 'H' : i.toString(),
+                        icon: location.isHome ? 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' : null
+                    });
+                    
+                    markers.push(marker);
+                    bounds.extend(position);
+                    
+                    // Create info window with travel time to next destination
+                    if (i < locations.length - 1) {
+                        const nextLocation = locations[i + 1];
+                        const service = new google.maps.DistanceMatrixService();
+                        
+                        try {
+                            const response = await new Promise((resolve, reject) => {
+                                service.getDistanceMatrix({
+                                    origins: [location.coords],
+                                    destinations: [nextLocation.coords],
+                                    travelMode: google.maps.TravelMode.DRIVING,
+                                    unitSystem: google.maps.UnitSystem.METRIC
+                                }, (response, status) => {
+                                    if (status === 'OK') resolve(response);
+                                    else reject(new Error('Distance Matrix failed'));
+                                });
+                            });
+                            
+                            if (response.rows[0].elements[0].status === 'OK') {
+                                const distance = response.rows[0].elements[0].distance.value / 1000; // Convert to km
+                                const flightTime = Math.round((distance / 800 + 2) * 2) / 2; // Assume 800 km/h + 2h for airport procedures
+                                
+                                const infoWindow = new google.maps.InfoWindow({
+                                    content: `
+                                        <div style="padding: 10px;">
+                                            <h3>${location.isHome ? 'Starting Point' : 'Stop ' + (i)}</h3>
+                                            <p>${location.name}</p>
+                                            <p>Next stop: ${nextLocation.name}</p>
+                                            <p>Estimated flight time: ${flightTime} hours</p>
+                                        </div>
+                                    `
+                                });
+                                
+                                infoWindows.push(infoWindow);
+                                
+                                marker.addListener('click', () => {
+                                    infoWindows.forEach(iw => iw.close());
+                                    infoWindow.open(map, marker);
+                                });
+                                
+                                // Draw line to next location
+                                const line = new google.maps.Polyline({
+                                    path: [location.coords, nextLocation.coords],
+                                    geodesic: true,
+                                    strokeColor: '#FF0000',
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 2
+                                });
+                                line.setMap(map);
+                                lines.push(line);
+                            }
+                        } catch (error) {
+                            console.error('Error calculating distance:', error);
+                        }
+                    }
+                }
+                
+                // Fit map to show all markers with padding
+                if (markers.length > 0) {
+                    map.fitBounds(bounds, {
+                        padding: {
+                            top: 50,
+                            right: 50,
+                            bottom: 50,
+                            left: 50
+                        }
+                    });
+                }
+                
+                console.log('Map initialization complete'); // Debug log
+                
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                const mapContainer = document.getElementById('mapContainer');
+                if (mapContainer) {
+                    mapContainer.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
+                            <h3>Error Loading Map</h3>
+                            <p>${error.message}</p>
+                            <button onclick="initializeMap()" style="margin-top: 10px; padding: 8px 16px;">Try Again</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Update the getAttractionsForCity function to use Gemini API
+        async function getAttractionsForCity(cityName) {
+            try {
+                const prompt = `
+                    I'm looking for 6-8 unique tourist attractions in ${cityName}.
+                    Please provide the following information for each attraction:
+                    - Name
+                    - Description (2-3 sentences)
+                    - Duration (morning/afternoon/evening or hours)
+                    - Tips for visitors
+                    
+                    Format the response as a JSON array:
+                    [
+                        {
+                            "name": "Attraction Name",
+                            "description": "Description of the attraction",
+                            "duration": "Duration (e.g., '2 hours' or 'morning')",
+                            "tips": "Helpful tips for visitors"
+                        }
+                    ]
+                    
+                    Please ensure the attractions are unique to ${cityName} and include a mix of:
+                    - Cultural/historical sites
+                    - Natural attractions
+                    - Local experiences
+                    - Popular tourist spots
+                `;
+
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get attractions from Gemini API');
+                }
+
+                const data = await response.json();
+                let cleanResponse = data.response;
+                cleanResponse = cleanResponse.replace(/```json\n?/g, '');
+                cleanResponse = cleanResponse.replace(/```\n?/g, '');
+                cleanResponse = cleanResponse.trim();
+                
+                return JSON.parse(cleanResponse);
+            } catch (error) {
+                console.error('Error getting attractions:', error);
+                return [
+                    {
+                        name: "City Museum",
+                        description: "Explore the rich history and culture of the city",
+                        duration: "2 hours",
+                        tips: "Arrive early to avoid crowds"
+                    },
+                    {
+                        name: "Historic District",
+                        description: "Walk through the charming historic streets",
+                        duration: "1.5 hours",
+                        tips: "Wear comfortable shoes for walking"
+                    },
+                    {
+                        name: "Local Market",
+                        description: "Experience local flavors and crafts",
+                        duration: "1 hour",
+                        tips: "Try the local street food"
+                    }
+                ];
+            }
+        }
+
+        // Add the displayRecommendations function
+        function displayRecommendations(recommendations, startDate) {
+            // Ensure the recommendations tab is active
+            showTab('recommendations');
+            
+            // Get the elements
+            const recommendationsDiv = document.getElementById('recommendations');
+            const cityCardsDiv = document.getElementById('cityCards');
+            
+            if (!recommendationsDiv || !cityCardsDiv) {
+                console.error('Required elements not found in the DOM');
+                return;
+            }
+            
+            // Clear previous recommendations
+            cityCardsDiv.innerHTML = '';
+            
+            // Create cards for each recommendation
+            recommendations.forEach(destination => {
+                const card = document.createElement('div');
+                card.className = 'destination-card';
+                
+                // Calculate match percentage
+                const matchPercentage = Math.round((destination.matchScore / (preferences.length * 3 + 10)) * 100);
+                
+                // Get budget indicator
+                const budgetIndicator = getBudgetIndicator(destination.budget);
+                
+                // Get season info
+                const seasonInfo = getSeasonInfo(destination.bestSeasons, startDate);
+                
+                card.innerHTML = `
+                    <h3>${destination.name} <span class="match-score">${matchPercentage}% Match</span></h3>
+                    <p>${destination.description}</p>
+                    <div class="activity-match">
+                        <strong>Matching Activities:</strong>
+                        ${destination.matchedActivities.map(activity => `
+                            <span class="activity-tag">${activity}</span>
+                        `).join('')}
+                    </div>
+                    <div class="budget-indicator ${destination.budget}">
+                        Budget Level: ${budgetIndicator}
+                    </div>
+                    <div class="season-info">
+                        ${seasonInfo}
+                    </div>
+                    <div class="destination-select">
+                        <label>
+                            <input type="checkbox" 
+                                   onchange="toggleDestination('${destination.name}')"
+                                   ${selectedDestinations.includes(destination.name) ? 'checked' : ''}>
+                            Select this destination
+                        </label>
+                    </div>
+                    <button onclick="showLocations('${destination.name}')" class="location-btn">Find Specific Locations</button>
+                `;
+                
+                cityCardsDiv.appendChild(card);
+            });
+            
+            // Show the selected destinations container if any destinations are selected
+            const selectedDestinationsContainer = document.getElementById('selectedDestinationsContainer');
+            if (selectedDestinationsContainer) {
+                selectedDestinationsContainer.style.display = selectedDestinations.length > 0 ? 'block' : 'none';
+            }
+        }
+
+        // Add helper functions for displayRecommendations
+        function getBudgetIndicator(budget) {
+            switch (budget) {
+                case 'low':
+                    return '💰 Budget-friendly';
+                case 'medium':
+                    return '💰💰 Moderate';
+                case 'high':
+                    return '💰💰💰 Luxury';
+                default:
+                    return budget;
+            }
+        }
+
+        function getSeasonInfo(bestSeasons, startDate) {
+            if (!startDate) return '';
+            
+            const month = new Date(startDate).getMonth() + 1;
+            let currentSeason;
+            
+            if (month >= 3 && month <= 5) currentSeason = 'spring';
+            else if (month >= 6 && month <= 8) currentSeason = 'summer';
+            else if (month >= 9 && month <= 11) currentSeason = 'fall';
+            else currentSeason = 'winter';
+            
+            const isGoodSeason = bestSeasons.includes(currentSeason);
+            
+            return `
+                Best seasons: ${bestSeasons.join(', ').replace(/\b\w/g, l => l.toUpperCase())}
+                <br>
+                Your travel season: ${currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)}
+                <br>
+                ${isGoodSeason ? '✅ Perfect time to visit!' : '⚠️ Consider visiting during the recommended seasons'}
+            `;
+        }
+
+        function toggleDestination(destinationName) {
+            const checkbox = document.querySelector(`input[type="checkbox"][onchange="toggleDestination('${destinationName}')"]`);
+            
+            if (checkbox.checked) {
+                if (!selectedDestinations.includes(destinationName)) {
+                    selectedDestinations.push(destinationName);
+                }
+            } else {
+                selectedDestinations = selectedDestinations.filter(dest => dest !== destinationName);
+            }
+            
+            updateSelectedDestinations();
+        }
+
+        // Add the showLocations function
+        async function showLocations(cityName) {
+            try {
+                // Create a modal to display attractions
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                `;
+
+                // Create modal content
+                const modalContent = document.createElement('div');
+                modalContent.className = 'modal-content';
+                modalContent.style.cssText = `
+                    background-color: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    max-width: 80%;
+                    max-height: 80%;
+                    overflow-y: auto;
+                    position: relative;
+                `;
+
+                // Add loading indicator
+                modalContent.innerHTML = `
+                    <h2>Loading attractions for ${cityName}...</h2>
+                    <div class="loading">Please wait while we fetch the attractions...</div>
+                `;
+
+                // Add close button
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'Close';
+                closeButton.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    padding: 5px 10px;
+                    background-color: #e74c3c;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                `;
+                closeButton.onclick = () => {
+                    document.body.removeChild(modal);
+                };
+
+                // Add modal to page
+                modalContent.appendChild(closeButton);
+                modal.appendChild(modalContent);
+                document.body.appendChild(modal);
+
+                // Get attractions for the city
+                const attractions = await getAttractionsForCity(cityName);
+
+                // Update modal content with map and attractions
+                modalContent.innerHTML = `
+                    <h2>Attractions in ${cityName}</h2>
+                    <div id="attractionsMap" style="width: 100%; height: 300px; margin: 20px 0;"></div>
+                    <div class="attractions-list">
+                        ${attractions.map(attraction => `
+                            <div class="attraction-item" style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                <h3>${attraction.name}</h3>
+                                <p>${attraction.description}</p>
+                                <p><strong>Duration:</strong> ${attraction.duration}</p>
+                                <p><strong>Tips:</strong> ${attraction.tips}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                // Add close button again after updating content
+                const newCloseButton = document.createElement('button');
+                newCloseButton.textContent = 'Close';
+                newCloseButton.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    padding: 5px 10px;
+                    background-color: #e74c3c;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                `;
+                newCloseButton.onclick = () => {
+                    document.body.removeChild(modal);
+                };
+                modalContent.appendChild(newCloseButton);
+
+                // Initialize map
+                const map = new google.maps.Map(document.getElementById('attractionsMap'), {
+                    zoom: 12,
+                    center: { lat: 0, lng: 0 }, // Will be updated
+                    mapTypeId: 'terrain'
+                });
+
+                // Get city coordinates
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: cityName }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        const location = results[0].geometry.location;
+                        map.setCenter(location);
+
+                        // Add markers for each attraction
+                        attractions.forEach(attraction => {
+                            // Add a small random offset to spread out the markers
+                            const offset = (Math.random() - 0.5) * 0.02;
+                            const marker = new google.maps.Marker({
+                                position: {
+                                    lat: location.lat() + offset,
+                                    lng: location.lng() + offset
+                                },
+                                map: map,
+                                title: attraction.name
+                            });
+
+                            // Add info window
+                            const infoWindow = new google.maps.InfoWindow({
+                                content: `
+                                    <h3>${attraction.name}</h3>
+                                    <p>${attraction.description}</p>
+                                    <p><strong>Duration:</strong> ${attraction.duration}</p>
+                                    <p><strong>Tips:</strong> ${attraction.tips}</p>
+                                `
+                            });
+
+                            marker.addListener('click', () => {
+                                infoWindow.open(map, marker);
+                            });
+                        });
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error showing locations:', error);
+                alert('Error loading attractions. Please try again later.');
+            }
+        }
+
+        // Add the getTravelTimeInHours function
+        async function getTravelTimeInHours(from, to) {
+            try {
+                // Get the travel time string
+                const travelTimeStr = await getTravelTime(from, to);
+                
+                // Parse the travel time string to get hours
+                if (typeof travelTimeStr === 'string') {
+                    if (travelTimeStr === 'Not available') {
+                        // Calculate a reasonable default based on the cities
+                        const fromCity = from === "Home" ? document.getElementById('startingCity').value : from;
+                        const toCity = to === "Home" ? document.getElementById('startingCity').value : to;
+                        
+                        // If we have data for the reverse route, use that
+                        const reverseTime = await getTravelTime(toCity, fromCity);
+                        if (reverseTime !== 'Not available') {
+                            return parseFloat(reverseTime);
+                        }
+                        
+                        // If still not available, return a default value
+                        return 8; // Default to 8 hours for international flights
+                    }
+                    
+                    // Handle ranges like "3-5"
+                    if (travelTimeStr.includes('-')) {
+                        const [min, max] = travelTimeStr.split('-').map(Number);
+                        return (min + max) / 2; // Return average
+                    }
+                    
+                    // Handle single number
+                    return parseFloat(travelTimeStr);
+                }
+                
+                // If travelTimeStr is not a string, try to parse it directly
+                return parseFloat(travelTimeStr) || 8;
+            } catch (error) {
+                console.error('Error getting travel time:', error);
+                return 8; // Default to 8 hours if there's an error
+            }
+        }
+
+        // Add the generatePermutations function
+        function generatePermutations(arr) {
+            if (arr.length <= 1) return [arr];
+            
+            const result = [];
+            
+            for (let i = 0; i < arr.length; i++) {
+                const current = arr[i];
+                const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)];
+                const subPermutations = generatePermutations(remaining);
+                
+                for (const subPerm of subPermutations) {
+                    result.push([current, ...subPerm]);
+                }
+            }
+            
+            return result;
+        }
+
+        // Add the getTravelTime function
+        async function getTravelTime(from, to) {
+            try {
+                // Handle special case for Home location
+                if (from === "Home" || to === "Home") {
+                    const homeLocation = document.getElementById('startingCity').value;
+                    if (from === "Home") {
+                        return await calculateTravelTime(homeLocation, to);
+                    } else {
+                        return await calculateTravelTime(from, homeLocation);
+                    }
+                }
+
+                return await calculateTravelTime(from, to);
+            } catch (error) {
+                console.error('Error getting travel time:', error);
+                return "8"; // Default to 8 hours if there's an error
+            }
+        }
+
+        // Add the calculateTravelTime function
+        async function calculateTravelTime(from, to) {
+            try {
+                // First, try to get flight time
+                const flightTime = await getFlightTime(from, to);
+                if (flightTime) {
+                    return flightTime;
+                }
+
+                // If no flight time available, check for train
+                const trainAvailable = await isTrainAvailable(from, to);
+                if (trainAvailable) {
+                    const trainTime = await getTrainTime(from, to);
+                    if (trainTime) {
+                        return trainTime;
+                    }
+                }
+
+                // If no train or train time not available, get driving time
+                const drivingTime = await getDrivingTime(from, to);
+                if (drivingTime) {
+                    return drivingTime;
+                }
+
+                // If all else fails, estimate based on distance
+                return estimateTravelTime(from, to);
+            } catch (error) {
+                console.error('Error calculating travel time:', error);
+                return "8"; // Default to 8 hours if there's an error
+            }
+        }
+
+        // Add the isTrainAvailable function
+        async function isTrainAvailable(from, to) {
+            try {
+                // Handle "Home" cases by using the starting city
+                const startingCity = document.getElementById('startingCity').value;
+                const fromCity = from === "Home" ? startingCity : from;
+                const toCity = to === "Home" ? startingCity : to;
+
+                // Get city information using Google Maps Geocoding
+                const geocoder = new google.maps.Geocoder();
+                
+                // Get coordinates for both cities
+                const fromResults = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ address: fromCity }, (results, status) => {
+                        if (status === 'OK') resolve(results);
+                        else reject(new Error(`Geocode failed for ${fromCity}`));
+                    });
+                });
+                
+                const toResults = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ address: toCity }, (results, status) => {
+                        if (status === 'OK') resolve(results);
+                        else reject(new Error(`Geocode failed for ${toCity}`));
+                    });
+                });
+                
+                if (!fromResults[0] || !toResults[0]) {
+                    return false;
+                }
+                
+                // Get formatted addresses to check for continent
+                const fromAddress = fromResults[0].formatted_address.toLowerCase();
+                const toAddress = toResults[0].formatted_address.toLowerCase();
+                
+                // Check if either city is in America
+                const isInAmerica = (address) => {
+                    return address.includes('united states') || 
+                           address.includes('canada') || 
+                           address.includes('mexico') ||
+                           address.includes('brazil') ||
+                           address.includes('argentina') ||
+                           address.includes('chile') ||
+                           address.includes('peru') ||
+                           address.includes('colombia') ||
+                           address.includes('venezuela');
+                };
+                
+                // If either city is in America, no train
+                if (isInAmerica(fromAddress) || isInAmerica(toAddress)) {
+                    return false;
+                }
+                
+                // Check if cities are in the same country or neighboring countries
+                const fromCountry = fromAddress.split(',').pop().trim();
+                const toCountry = toAddress.split(',').pop().trim();
+                
+                // If cities are in the same country, assume train is available
+                if (fromCountry === toCountry) {
+                    return true;
+                }
+                
+                // List of countries with good international train connections
+                const trainCountries = [
+                    'france', 'germany', 'italy', 'spain', 'switzerland', 
+                    'austria', 'belgium', 'netherlands', 'denmark', 'sweden',
+                    'norway', 'finland', 'poland', 'czech republic', 'hungary',
+                    'united kingdom', 'portugal', 'russia', 'china', 'japan',
+                    'south korea', 'india', 'thailand', 'vietnam', 'malaysia'
+                ];
+                
+                // Check if both countries are in the list of countries with good train connections
+                return trainCountries.includes(fromCountry.toLowerCase()) && 
+                       trainCountries.includes(toCountry.toLowerCase());
+            } catch (error) {
+                console.error('Error checking train availability:', error);
+                return false;
+            }
+        }
+    </script>
 </head>
 <body>
-
-    <h2>Welcome back, {UserID}!</h2>
-
     <div class="container">
-        <div class="left">
-            <div class="tabs">
-                <div class="tab active">Not Started</div>
-                <div class="tab">In Progress</div>
-                <div class="tab">Completed</div>
-            </div>
-
-            <div class="problems">
-                <div class="problem">
-                    <span>Problem name</span>
-                    <button>Go to problem</button>
-                </div>
-                <div class="problem">
-                    <span>Problem name</span>
-                    <button>Go to problem</button>
-                </div>
-                <div class="problem">
-                    <span>Problem name</span>
-                    <button>Go to problem</button>
-                </div>
-                <div class="problem">
-                    <span>Problem name</span>
-                    <button>Go to problem</button>
-                </div>
-                <div class="problem">
-                    <span>Problem name</span>
-                    <button>Go to problem</button>
-                </div>
-            </div>
-
-            <button class="generate-btn">✨ Generate my own</button>
+        <h1>VIP (Vacation Itinerary Planner)</h1>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('preferences')">Your Preferences</div>
+            <div class="tab" onclick="showTab('recommendations')">Recommended Destinations</div>
+            <div class="tab" onclick="showTab('schedule')">Your Schedule</div>
+            <div class="tab" onclick="showTab('map')">World Map</div>
         </div>
         
-        <div class="right">
-            <div class="user-stats">
-                <h3>About you</h3>
-                <div class="stats-box">Rating</div>
-                <div class="stats-box"># problems solved overall</div>
-                <div class="see-more">See more</div>
+        <div id="preferences-tab" class="tab-content active">
+            <div class="form-group">
+                <label for="startDate">When do you want to travel?</label>
+                <input type="date" id="startDate" required>
             </div>
+
+            <div class="form-group">
+                <label for="endDate">Until when?</label>
+                <input type="date" id="endDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="budget">What's your budget level?</label>
+                <select id="budget">
+                    <option value="low">Budget-friendly</option>
+                    <option value="medium" selected>Moderate</option>
+                    <option value="high">Luxury</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="preference">What activities interest you?</label>
+                <input type="text" id="preference" placeholder="e.g., beach relaxation, hiking, museums, food tours">
+                <button onclick="addPreference()">Add Activity</button>
+            </div>
+            
+            <div id="preferencesList"></div>
+            
+            <div class="form-group">
+                <label for="region">Preferred regions (optional)?</label>
+                <input type="text" id="region" placeholder="e.g., Europe, Asia, France, Japan">
+                <button onclick="addRegion()">Add Region</button>
+                <div class="region-tags" id="regionTags"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="startingCity">Where would you like to start your journey?</label>
+                <input type="text" class="form-control" id="startingCity" placeholder="Enter city, country (e.g., Tokyo, Japan)" required>
+            </div>
+            
+            <button onclick="findDestinations()" style="margin-top: 20px;">Find Destinations</button>
+
+            <div id="preferences-loading" class="loading" style="display: none; margin-top: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2em; color: var(--secondary-color); margin-bottom: 10px;">🔍 Finding Perfect Destinations</div>
+                    <div style="color: var(--text-color); font-style: italic;">Searching for destinations that match your preferences...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="recommendations-tab" class="tab-content">
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+            <div id="recommendations">
+                <div class="row" id="cityCards"></div>
+                <div class="mt-4" id="travelTimes"></div>
+            </div>
+            
+            <div class="selected-destinations" id="selectedDestinationsContainer" style="display: none;">
+                <h3>Selected Destinations</h3>
+                <div id="selectedDestinationsList"></div>
+                <button onclick="generateSchedule()" style="margin-top: 20px;">Generate Schedule</button>
+            </div>
+        </div>
+
+        <div id="schedule-tab" class="tab-content">
+            <div id="schedule"></div>
+        </div>
+
+        <div id="map-tab" class="tab-content">
+            <h2>Your Journey Map</h2>
+            <div id="mapContainer" style="width: 100%; height: 600px;"></div>
         </div>
     </div>
 
+    <script>
+        // Initialize Google Maps callback
+        function initGoogleMaps() {
+            console.log('Google Maps API loaded');
+            // If we're on the map tab and have destinations, initialize the map
+            if (document.querySelector('.tab.active[onclick="showTab(\'map\')"]') && window.mapDestinations) {
+                initializeMap();
+            }
+        }
+
+        // Store destinations globally for map access
+        window.mapDestinations = [];
+        
+        // Function to update the map destinations
+        function updateMapDestinations(schedule) {
+            window.mapDestinations = schedule.map(day => day.destination || day.to).filter(Boolean);
+            console.log('Updated map destinations:', window.mapDestinations);
+        }
+
+        // Rest of your JavaScript functions...
+        // (Copy all the JavaScript functions from your current working version here)
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            document.getElementById('startDate').valueAsDate = new Date();
+            
+            // Add event listeners
+            document.getElementById('generateSchedule').addEventListener('click', async function() {
+                await generateSchedule();
+            });
+        });
+    </script>
 </body>
 </html>
